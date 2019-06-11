@@ -54,7 +54,7 @@ on join:
         send ""
         send ""
         send ""
-        send "&9&lJailCraft &6&lBattle Royale &7&lv1.1"
+        send "&6&lBattle Royale"
         send ""
         send ""
         send ""
@@ -62,8 +62,6 @@ on join:
         send ""
         send ""
         send ""
-        send "&cHave Fun playing! &aRemember to report any"
-        send "&aglitches/bugs you encounter :)"
         if amount of all players is greater than 1:
             if {starting} is 0:
                 set {starting} to 1
@@ -72,7 +70,7 @@ on join:
                 stop
         else:
             set {game} to 0
-            make console execute command "setmotd temporary &9&lJailCraft &6&lBattle Royale &7- &dMC 1.12+%%newline%%&bWaiting for players."
+            make console execute command "setmotd temporary &6&lBattle Royale &7- &dMC 1.12+%%newline%%&bWaiting for players."
             make console execute command "waiting"
         
 command /waiting:
@@ -118,7 +116,7 @@ command /startgame:
                             set loop-player's gamemode to survival
                             set loop-player's chestplate to elytra
                     make console execute command "storm 1"
-                    make console execute command "setmotd temporary &9&lJailCraft &6&lBattle Royale &7- &dMC 1.12+%%newline%%&b&aGame In-Progress. %{alive}% players alive."
+                    make console execute command "setmotd temporary &6&lBattle Royale &7- &dMC 1.12+%%newline%%&b&aGame In-Progress. %{alive}% players alive."
                 
 command /starttimer:
     permission: op
@@ -145,11 +143,11 @@ command /victory [<text>]:
     permission: op
     trigger:
         if arg 1 is not set:
-            broadcast "&cAn error occured! Please contact MinecraftKid45 about this!"
+            broadcast "&cAn error occured!"
             wait 2 seconds
             make console execute command "resetmap"
         if arg 1 is "<none>":
-            broadcast "&cAn error occured! Please contact MinecraftKid45 about this!"
+            broadcast "&cAn error occured!"
             wait 2 seconds
             make console execute command "resetmap"
         else:
@@ -191,7 +189,7 @@ on damage of player:
                 set victim's gamemode to spectator
                 remove victim from {alive::*}
                 subtract 1 from {alive}
-                make console execute command "setmotd temporary &9&lJailCraft &6&lBattle Royale &7- &dMC 1.12+%%newline%%&b&aGame In-Progress. %{alive}% players alive."
+                make console execute command "setmotd temporary &6&lBattle Royale &7- &dMC 1.12+%%newline%%&b&aGame In-Progress. %{alive}% players alive."
                 if attacker is a player:
                     if {alive} is 1:
                         clear the victim's inventory
@@ -234,7 +232,7 @@ on quit:
                 if {alive::*} contains player:
                     remove player from {alive::*}
                     subtract 1 from {alive}
-                    make console execute command "setmotd temporary &9&lJailCraft &6&lBattle Royale &7- &dMC 1.12+%%newline%%&b&aGame In-Progress. %{alive}% players alive."
+                    make console execute command "setmotd temporary &6&lBattle Royale &7- &dMC 1.12+%%newline%%&b&aGame In-Progress. %{alive}% players alive."
                     wait 0.1 second
                     if {alive} is less than 2:
                         loop all players:
