@@ -2,9 +2,13 @@
 This a Fortnite-like Battle Royale gamemode built in Skript for Spigot/Bukkit Servers.
 
 Required Plugins:
+
 Skript
+
 ActionBar (for timers in ActionBar)
+
 Multiverse (for the worlds)
+
 MotdChanger (for Changing the MOTD depending on game state)
 
 Setup:
@@ -12,7 +16,9 @@ Setup:
 You need 3 worlds.
 
 One for your lobby (used the normal "world" for this in the script)
+
 One for your players to actually play on and use (used the name "Map" for this in the script)
+
 One for your Map in its normal state (used the name "Map_Normal" for this in the script)
 
 
@@ -29,6 +35,9 @@ Once the game starts, players will spawn at the Map spawn point and be able to g
 After they have killed each other and only 1 player remains, the player will win the game and shortly be taken kicked off the server while the Griefed Player's Map is deleted and is cloned with the Normal Map.
 
 Some Features of the game are:
+
 Spectator system on death, spectators can still watch the game without being seen as Alive.
+
 Map resetting system.
+
 Working World Border/Storm system, with working timers/warnings for the storm.
