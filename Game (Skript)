@@ -1,3 +1,14 @@
+command /tpspawn [<text>]:
+    permission: op
+    trigger:
+        if arg 1 is not set:
+            send "&cUsage: /tpspawn <location>"
+        if arg 1 is set:
+            if {spawn.%arg 1%} is set:
+                teleport player to {spawn.%arg 1%}
+            else:
+                send "&cSpawn ""%arg 1%"" does not exist!"
+
 command /setspawn [<text>]:
     permission: op
     trigger:
@@ -7,152 +18,231 @@ command /setspawn [<text>]:
         if arg 1 is set:
             send "&cSet %arg 1% spawn to %player's location%"
             set {spawn.%arg 1%} to player's location
+            
+on skript load:
+    make console execute command "startgame"
 
 command /alive:
     permission: op
+    permission message: Command not recognized.
     trigger:
         if {alive} is greater than 0:
             send "%{alive::*}%"
         else:
             send "&cNo players are currently alive"
             
+on connect:
+    if {game} is 1:
+        kick the player because "A game is already in-progress! Please wait until its finished."
+            
 on join:
     if {game} is 1:
-        kick the player because "You cannot join while a game is in progress, try later!"
-    if {game} is 0:
+        wait 1 second
+        kick the player because "A game is already in-progress! Please wait until its finished."
+    else:
+        clear {admin.%player%}
         teleport player to {spawn.lobby}
         clear the player's inventory
-        wait 0.2 second
-        give player an Iron Pickaxe of efficiency 10 and unbreaking 25 named "&bPickaxe"
         set player's gamemode to survival
-        send "&4&lInstant-Craft &6&lBattle Royale BETA"
-        send "Made by MinecraftKid45 <3"
-        make console execute command "startgame"
-    else:
-        kick the player because "&cA critical error has occured! Please try again later!"
+        wait 0.2 second
+        give player an Iron Pickaxe of unbreaking 25 named "&bPickaxe"
+        send ""
+        send ""
+        send ""
+        send ""
+        send ""
+        send ""
+        send ""
+        send ""
+        send "&9&lJailCraft &6&lBattle Royale &7&lv1.1"
+        send ""
+        send ""
+        send ""
+        send ""
+        send ""
+        send ""
+        send ""
+        send "&cHave Fun playing! &aRemember to report any"
+        send "&aglitches/bugs you encounter :)"
+        if amount of all players is greater than 1:
+            if {starting} is 0:
+                set {starting} to 1
+                make console execute command "startgame"
+            else:
+                stop
+        else:
+            set {game} to 0
+            make console execute command "setmotd temporary &9&lJailCraft &6&lBattle Royale &7- &dMC 1.12+%%newline%%&bWaiting for players."
+            make console execute command "waiting"
+        
+command /waiting:
+    permission: op
+    trigger:
+        loop 999999 times:
+            if {starting} is 0:
+                make console execute command "ab world world &6Atleast 1 more player is needed to start the game.."
+                wait 1 second
+            if {starting} is 1:
+                stop
     
 command /startgame:
     permission: op
     trigger:
         if amount of all players is less than 2:
-            broadcast "&cWaiting for Players!"
-            set {game} to 0
-        if amount of all players is greater than 1:
-            set {starting} to 1
+            stop
+        if {starting} is set:
             set {game} to 0
             set {starttimer} to 15
             set {min} to 5
             set {sec} to 0
-            set {alive} to amount of all players
-            wait 1 second
             make console execute command "starttimer"
-            broadcast "&eGame Starting in 15 seconds!"
-            clear {alive::*}
-            wait 0.1 second
-            loop all players:
-                add loop-player to {alive::*}
-            wait 15 seconds
-            if {starting} is 1:
-                set {starting} to 0
-                set {game} to 1
-                teleport all players to {spawn.map}
-                make console execute command "title @a title """""
-                make console execute command "title @a subtitle ""\u00A7cPress Space to Glide!"""
-                make console execute command "clear @a"
-                if {game} is 1:
-                    set {min} to 5
-                    set {sec} to 0
-                    wait 0.1 second
-                    make console execute command "border"      
+            loop 60 times:
+                if {starting} is 1:
+                    wait 1 second
+                if {starting} is 0:
+                    stop
+            if amount of all players is greater than 1:
+                if {starting} is 1:
+                    set {starting} to 0
+                    set {game} to 1
+                    set {alive} to amount of all players
+                    clear {alive::*}
+                    teleport all players to {spawn.map}
                     loop all players:
-                        set loop-player's chestplate to Elytra
-                        set loop-player's gamemode to survival
-                        clear the player's inventory
-                        wait 0.3 second
-                        give loop-player an Iron Pickaxe of efficiency 10 and unbreaking 25 named "&bPickaxe"            
+                        if {game} is 1:
+                            clear loop-player's inventory
+                            make console execute command "title %loop-player% title """""
+                            make console execute command "title @a %loop-player% ""\u00A7cPress Space to Glide!"""
+                            add loop-player to {alive::*}
+                            set {sky.%loop-player%} to "true"
+                            set loop-player's gamemode to survival
+                            set loop-player's chestplate to elytra
+                    make console execute command "storm 1"
+                    make console execute command "setmotd temporary &9&lJailCraft &6&lBattle Royale &7- &dMC 1.12+%%newline%%&b&aGame In-Progress. %{alive}% players alive."
                 
 command /starttimer:
     permission: op
     trigger:
-        loop 15 times:
-            if {game} is 0:
+        broadcast "&6Game Starting in 1 minute."
+        wait 30 seconds
+        if {starting} is 1:
+            broadcast "&6Game Starting in 30 seconds."
+            wait 15 seconds
+            if {starting} is 1:
+                broadcast "&6Game Starting in 15 seconds."
                 if {starting} is 1:
-                    wait 1 second
-                    subtract 1 from {starttimer}
-                    if {starttimer} is 1:
-                        broadcast "&eGame Starting in %{starttimer}% second!"
-                    if {starttimer} is greater than 1:
-                        broadcast "&eGame Starting in %{starttimer}% seconds!"
+                    loop 15 times:
+                        if {starting} is 1:
+                            if amount of all players is greater than 1:
+                                wait 1 second
+                                subtract 1 from {starttimer}
+                                if {starttimer} is greater than 1:
+                                    broadcast "&6Game Starting in %{starttimer}% seconds!"
+                                if {starttimer} is 1:
+                                    broadcast "&6Game Starting in %{starttimer}% second!"
             
-command /victory [<player>]:
+command /victory [<text>]:
     permission: op
     trigger:
-        if {alive} is less than 2:
-            if {starting} is 0:
-                if {game} is 1:
-                    set {game} to 0
-                    set {min} to "stop"
-                    set {sec} to "stop"
-                    make console execute command "worldborder set 5000"
-                    send "" to all players
-                    send "&6%arg 1% has won the game!" to all players
-                    send "" to all players
-                    make console execute command "title %arg 1% title ""\u00A76Victory Royale!"""
-                    set arg 1's gamemode to creative
-                    wait 6 seconds
-                    set arg 1's gamemode to survival
-                    teleport all players to {spawn.lobby}
-                    wait 0.1 second
-                    clear arg 1's inventory
-                    make console execute command "resetmap"
-                    loop all players:
-                        give loop-player an Iron Pickaxe of efficiency 10 and unbreaking 25 named "&bPickaxe"
+        if arg 1 is not set:
+            broadcast "&cAn error occured! Please contact MinecraftKid45 about this!"
+            wait 2 seconds
+            make console execute command "resetmap"
+        if arg 1 is "<none>":
+            broadcast "&cAn error occured! Please contact MinecraftKid45 about this!"
+            wait 2 seconds
+            make console execute command "resetmap"
+        else:
+            if {alive} is 1:
+                if {starting} is 0:
+                    if {game} is 1:
+                        set {min} to "stop"
+                        set {sec} to "stop"
+                        clear {alive::*}
+                        set {game} to 0
+                        set {alive} to 0
+                        make console execute command "execute @r ~ ~ ~ worldborder set 5000"
+                        set {winner} to arg 1
+                        broadcast "&6%arg 1% &7won the game!"
+                        loop all players:
+                            if loop-player is arg 1:
+                                make console execute command "title %loop-player% title ""\u00A76Victory Royale!"""
+                            if loop-player is not arg 1:
+                                make console execute command "title %loop-player% title """""
+                                make console execute command "title %loop-player% subtitle ""\U00A76%arg 1% \u00A77won the game!"""
+                        set {winner}'s gamemode to creative
+                        wait 6 seconds
+                        set {winner}'s gamemode to survival
+                        clear {winner}'s inventory
+                        wait 0.2 seconds
+                        make console execute command "resetmap"
                     
-on death:
-    remove player from {alive::*}
-    subtract 1 from {alive}
-    wait 0.1 second
-    if attacker is a player:
-        if {alive} is less than 2:
-            clear the victim's inventory
-            wait 0.1 second
-            make console execute command "title %attacker% subtitle ""\u00A7cYou killed %victim%"""
-            make console execute command "title %victim% title ""\u00A7cEliminated by %attacker%!"""
-            set the death message to "&c%victim% has been killed by %attacker%"
-            make console execute command "victory %{alive::*}%"
-        else:
-            make console execute command "clear %victim%"
-            wait 0.1 second
-            make console execute command "title %attacker% title """""
-            make console execute command "title %attacker% subtitle ""\u00A7cEliminated %victim%"""
-            make console execute command "title %victim% title ""\u00A7cEliminated by %attacker%!"""
-            set the death message to "&c%victim% has been killed by %attacker%"
+on damage of player:
+    if {sky.%victim%} is set:
+        cancel event
+        stop
     else:
-        if {alive} is less than 2:
-            make console execute command "clear %victim%"
-            wait 0.1 second
-            make console execute command "title %victim% title ""\u00A7cYou've been eliminated!"""
-            set the death message to "&c%victim% died"
-            make console execute command "victory %{alive::*}%"
-        else:
-            make console execute command "clear %victim%"
-            wait 0.1 second
-            make console execute command "title %victim% title ""\u00A7cEliminated by %attacker%!"""
-            set the death message to "&c%victim% died"
+        if {game} is 0:
+            cancel event
+            stop
+        if {game} is 1:
+            if (victim's health - damage) < 0.1:
+                cancel event
+                set victim's gamemode to spectator
+                remove victim from {alive::*}
+                subtract 1 from {alive}
+                make console execute command "setmotd temporary &9&lJailCraft &6&lBattle Royale &7- &dMC 1.12+%%newline%%&b&aGame In-Progress. %{alive}% players alive."
+                if attacker is a player:
+                    if {alive} is 1:
+                        clear the victim's inventory
+                        make console execute command "title %attacker% subtitle ""\u00A7cYou killed %victim%"""
+                        make console execute command "title %victim% title ""\u00A7cEliminated by %attacker%!"""
+                        broadcast "&c%victim% &7has been killed by &6%attacker%"
+                        make console execute command "victory %{alive::*}%"
+                        stop
+                    else:
+                        make console execute command "clear %victim%"
+                        make console execute command "title %attacker% title """""
+                        make console execute command "title %attacker% subtitle ""\u00A7cEliminated %victim%"""
+                        make console execute command "title %victim% title ""\u00A7cEliminated by %attacker%!"""
+                        broadcast "&c%victim% &7has been killed by &6%attacker%"
+                else:
+                    if {alive} is 1:
+                        make console execute command "clear %victim%"
+                        make console execute command "title %victim% title ""\u00A7cYou've been eliminated!"""
+                        broadcast "&c%victim% &7died!"
+                        make console execute command "victory %{alive::*}%"
+                    else:
+                        make console execute command "clear %victim%"
+                        make console execute command "title %victim% title ""\u00A7cEliminated by %attacker%!"""
+                        broadcast "&c%victim% &7died!"
 
 on quit:
-    remove player from {alive::*}
-    subtract 1 from {alive}
-    wait 0.1 second
-    if {alive} is less than 2:
-        if {starting} is 1:
+    if {starting} is 1:
+        if amount of all players is less than 2:
             set {starting} to 0
-            send "&cStarting has been canceled, there are not enough players to start the game." to all players
-        if {starting} is 0:
-            if {game} is 1:
-                loop all players:
-                    if loop-player's gamemode is creative or survival:
-                        make console execute command "victory %loop-player%"
+            broadcast "&cStarting cancelled, atleast 2 players are needed to start the game."
+    if {starting} is 0:
+        if {game} is 1:
+            if amount of all players is 0:
+                set {min} to "stop"
+                set {sec} to "stop"
+                set {game} to 0
+                set {starting} to 0
+                make console execute command "resetmap"
+            else:
+                if {alive::*} contains player:
+                    remove player from {alive::*}
+                    subtract 1 from {alive}
+                    make console execute command "setmotd temporary &9&lJailCraft &6&lBattle Royale &7- &dMC 1.12+%%newline%%&b&aGame In-Progress. %{alive}% players alive."
+                    wait 0.1 second
+                    if {alive} is less than 2:
+                        loop all players:
+                            if loop-player's gamemode is survival:
+                                make console execute command "victory %loop-player%"
+                      
+        
+on quit:
     if amount of all players is 0:
         if {starting} is 0:
             if {game} is 1:
@@ -161,208 +251,172 @@ on quit:
                 set {game} to 0
                 set {starting} to 0
                 make console execute command "resetmap"
-    else:
-        send "&cQuit &7> &c%player% forfeit the game, rage quit?"
               
 on break of grass, dirt or sand:
     cancel event
     
+on walking on grass, stair, dirt, stone, brick, coal_block, slab or sand:
+    if {sky.%player%} is set:
+        wait 0.1 second
+        clear {sky.%player%}
+        set player's chestplate to air
+        give player an Iron Pickaxe of efficiency 10 and unbreaking 25 named "&bPickaxe"
+           
 on break:
-    if player is in world "Tilted Towers":
-        cancel event
+    if player is in world "world":
+        if {admin.%player%} is not set:
+            cancel event
+            
+on place:
+    if player is in world "world":
+        if {admin.%player%} is not set:
+            cancel event
     
 on drop of iron pickaxe:
     cancel event
+   
+command /admin:
+    permission: op
+    permission message: &cPermission Denied.
+    trigger:
+        if {admin.%player%} is true:
+            clear {admin.%player%}
+            send "&cAdmin Mode is now Disabled."
+            stop
+        if {admin.%player%} is not set:
+            set {admin.%player%} to true
+            send "&aAdmin Mode is now Enabled."
     
 command /resetmap:
     permission: op
     trigger:
-        send "DEBUG" to console
-        send "Border Reset to 5000 blocks" to console
-        send "DEBUG" to console
-        make console execute command "worldborder set 5000"
+        set {game} to 0
+        set {starting} to 0
         set {min} to "stop"
         set {sec} to "stop"
+        clear {winner}
+        loop all players:
+            teleport loop-player to {spawn.lobby}
+        wait 0.5 second
+        make console execute command "mv delete Map"
+        wait 0.5 second
+        make console execute command "mvconfirm"
+        wait 1.5 seconds
+        make console execute command "mv clone Map_Normal Map"
         wait 5 seconds
-        make console execute command "startgame"
+        make console execute command "rl"
         
-        
-command /map:
+command /storm [<text>]:
     permission: op
+    permission message: &cYou do not have permission to use this command!
     trigger:
-        make player execute command "tp "
-        make player execute command "/schem load Map"
-        wait 3 seconds
-        make player execute command "//paste"
-        
-     
-command /border:
-    permission: op
-    trigger:
-        if {min} is "stop":
-            stop
-        else:
-            make console execute command "worldborder set 600"
-            send "&c&lWarning! &cStorm shrinking in 5 minutes!" to all players
+        if arg 1 is "1":
+            if {min} is "stop":
+                stop
+            else:
+                wait 30 seconds
+                make console execute command "execute @r ~ ~ ~ worldborder set 600"
+                send "&c&lWarning! &cStorm shrinking in 2 minutes!" to all players
+                make console execute command "title @a title """""
+                make console execute command "title @a subtitle ""\u00A7dStorm shrinking in 2 minutes!"""
+                set {min} to 2
+                set {sec} to 0
+                if {min} is 2:
+                    if {sec} is 0:
+                        make console execute command "ab all &dStorm shrinking in %{min}%:%{sec}%"
+                        wait 1 second
+                        set {min} to 1
+                        set {sec} to 59
+                        loop 59 times:
+                            wait 1 second
+                            remove 1 from {sec}
+                            if {min} is not "stop":          
+                                make console execute command "ab all &dStorm shrinking in %{min}%:%{sec}%"
+                            if {sec} is 0:
+                                wait 1 second
+                                set {min} to 0
+                                set {sec} to 59
+                                loop 59 times:
+                                    wait 1 second
+                                    remove 1 from {sec}
+                                    if {min} is not "stop":          
+                                        make console execute command "ab all &dStorm shrinking in %{min}%:%{sec}%"
+                                    if {sec} is 0:
+                                        make console execute command "storm 2"
+        if arg 1 is "2":
+            send "&c&lWarning! &cStorm will be finished shrinking in 1 minute!" to all players
             make console execute command "title @a title """""
-            make console execute command "title @a subtitle ""Storm shrinking in %{min}% minutes %{sec}% seconds!"""
-            set {min} to 5
-            set {sec} to 0
-            wait 0.1 second
-            make console execute command "timer"
-            if {min} is 5:
+            make console execute command "title @a subtitle ""\u00A7dStorm will be finished shrinking in 1 minute"""
+            make console execute command "execute @r ~ ~ ~ worldborder set 300 60"
+            wait 1 second
+            set {min} to 0
+            set {sec} to 59
+            make console execute command "ab all &dStorm will be finished shrinking in %{min}%:%{sec}%"
+            loop 59 times:         
+                wait 1 second
+                remove 1 from {sec}
                 if {sec} is 0:
                     wait 1 second
-                    set {min} to 4
+                    make console execute command "storm 3"
+                if {sec} is between 1 and 60:
+                    make console execute command "ab all &dStorm will be finished shrinking in %{min}%:%{sec}%"
+        if arg 1 is "3":
+            set {min} to 0
+            set {sec} to 59
+            make console execute command "ab all &dStorm shrinking in 1 minute"
+            make console execute command "title @a title """""
+            make console execute command "title @a subtitle ""\u00A7dStorm Shrinking in 1 minute"""
+            loop 59 times:         
+                wait 1 second
+                remove 1 from {sec}
+                if {sec} is 0:
+                    send "&c&lWarning! &cStorm will be finished shrinking in 1 minute!" to all players
+                    make console execute command "title @a title """""
+                    make console execute command "title @a subtitle ""\u00A7dStorm will be finished shrinking in 1 minute!"""
+                    make console execute command "execute @r ~ ~ ~ worldborder set 100 60"
+                    wait 1 second
+                    set {min} to 0
                     set {sec} to 59
-                    loop 59 times:
+                    make console execute command "ab all &dStorm will be finished shrinking in %{min}%:%{sec}%"
+                    loop 59 times:         
                         wait 1 second
                         remove 1 from {sec}
                         if {sec} is 0:
+                            make console execute command "storm takeover"
+                            stop
+                        if {sec} is between 1 and 60:
+                            make console execute command "ab all &dStorm will be finished shrinking in %{min}%:%{sec}%"
+                else:
+                    if {sec} is between 0 and 60:
+                        make console execute command "ab all &dStorm shrinking in %{min}%:%{sec}%"
+        if arg 1 is "takeover":
+            set {min} to 0
+            set {sec} to 59
+            make console execute command "title @a title """""
+            make console execute command "title @a subtitle ""\u00A7dStorm taking over in 1 minute!"""
+            make console execute command "ab all &dStorm taking over in 1 minute"
+            loop 59 times:         
+                wait 1 second
+                remove 1 from {sec}
+                if {sec} is 0:
+                    if {min} is 0:
+                        if {sec} is 0:
+                            set {min} to 1
+                            set {sec} to 0
+                            make console execute command "title @a title """""
+                            make console execute command "title @a subtitle ""\u00A7cSTORM IS TAKING OVER! \u00A74\u00A7lRUN!"""
+                            make console execute command "ab all &cStorm will have take over in %{min}%:%{sec}%"
+                            make console execute command "execute @r ~ ~ ~ worldborder set 1 59"
                             wait 1 second
-                            set {min} to 3
+                            set {min} to 0
                             set {sec} to 59
+                            wait 1 second
                             loop 59 times:
-                                wait 1 second
-                                remove 1 from {sec}
-                                if {sec} is 0:
-                                    wait 1 second
-                                    set {min} to 2
-                                    set {sec} to 59
-                                    loop 59 times:
-                                        wait 1 second
-                                        remove 1 from {sec}
-                                        if {sec} is 0:
-                                            wait 1 second
-                                            set {min} to 1
-                                            set {sec} to 59
-                                            loop 59 times:
-                                                wait 1 second
-                                                remove 1 from {sec}
-                                                if {sec} is 0:
-                                                    wait 1 second
-                                                    set {min} to 0
-                                                    set {sec} to 59
-                                                    loop 59 times:
-                                                        wait 1 second
-                                                        remove 1 from {sec}
-                                                        if {sec} is 0:
-                                                            wait 1 second
-                                                            make console execute command "timershrink"
-                                                                
-command /timer:
-    permission: op
-    trigger:
-        loop 300 times:
-            wait 1 second
-            make console execute command "ab all &eStorm will shrink in %{min}%:%{sec}%"
-            
-command /timershrink:
-    permission: op
-    trigger:
-        send "&c&lWarning! &cStorm shrinking completely in 1 minute!" to all players
-        make console execute command "title @a title """""
-        make console execute command "title @a subtitle ""Storm shrinking completely in %{min}% minutes %{sec}% seconds!"""
-        make console execute command "worldborder set 300 60"
-        wait 1 second
-        set {min} to 0
-        set {sec} to 59
-        make console execute command "ab all &eStorm will be finished shrinking in %{min}%:%{sec}%"
-        loop 59 times:         
-            wait 1 second
-            remove 1 from {sec}
-            if {sec} is 0:
-                wait 1 second
-                make console execute command "timerxd"
-            if {sec} is between 1 and 60:
-                make console execute command "ab all &eStorm will be finished shrinking in %{min}%:%{sec}%"
-                
-command /timerxd:
-    permission: op
-    trigger:
-        set {min} to 0
-        set {sec} to 59
-        make console execute command "ab all &eStorm shrinking in 1 minute"
-        make console execute command "title @a title """""
-        make console execute command "title @a subtitle ""Storm Shrinking in %{min}% minutes %{sec}% seconds!"""
-        loop 59 times:         
-            wait 1 second
-            remove 1 from {sec}
-            if {sec} is 0:
-                send "&c&lWarning! &cStorm shrinking completely in 1 minute!" to all players
-                make console execute command "title @a title """""
-                make console execute command "title @a subtitle ""Storm Shrinking completely in %{min}% minutes %{sec}% seconds!"""
-                make console execute command "worldborder set 100 60"
-                wait 1 second
-                set {min} to 0
-                set {sec} to 59
-                make console execute command "ab all &eStorm will be finished shrinking in %{min}%:%{sec}%"
-                loop 59 times:         
-                    wait 1 second
-                    remove 1 from {sec}
-                    if {sec} is 0:
-                        make console execute command "timerlast"
-                        stop
-                    if {sec} is between 1 and 60:
-                        make console execute command "ab all &eStorm will be finished shrinking in %{min}%:%{sec}%"
-            else:
-                if {sec} is between 0 and 60:
-                    make console execute command "ab all &eStorm will shrink in %{min}%:%{sec}%"
-                    
-command /timerlast:
-    permission: op
-    trigger:
-        set {min} to 0
-        set {sec} to 29
-        make console execute command "title @a title """""
-        make console execute command "title @a subtitle ""Storm Shrinking in %{sec}% seconds!"""
-        make console execute command "ab all &eStorm shrinking in 30 seconds"
-        loop 59 times:         
-            wait 1 second
-            remove 1 from {sec}
-            if {sec} is 0:
-                send "&c&lWarning! &cStorm shrinking completely in 1 minute!" to all players
-                make console execute command "title @a title """""
-                make console execute command "title @a subtitle ""Storm Shrinking completely in %{min}% minutes %{sec}% seconds!"""
-                make console execute command "worldborder set 50 60"
-                wait 1 second
-                set {min} to 0
-                set {sec} to 59
-                make console execute command "ab all &eStorm will be finished shrinking in %{min}%:%{sec}%"
-                loop 59 times:         
-                    wait 1 second
-                    remove 1 from {sec}
-                    if {sec} is 0:
-                        make console execute command "takeover"
-                    if {sec} is between 1 and 60:
-                        make console execute command "ab all &eStorm will be finished shrinking in %{min}%:%{sec}%"
-            else:
-                if {sec} is between 0 and 60:
-                    make console execute command "ab all &eStorm will shrink in %{min}%:%{sec}%"        
-                    
-command /takeover:
-    permission: op
-    trigger:
-        if {min} is 0:
-            if {sec} is 0:
-                set {min} to 1
-                set {sec} to 0
-                make console execute command "title @a title """""
-                make console execute command "title @a subtitle ""Storm Shrinking completely in %{min}% minutes %{sec}% seconds!"""
-                make console execute command "ab all &eStorm will take over in %{min}%:%{sec}%"
-                wait 1 second
-                set {min} to 0
-                set {sec} to 59
-                wait 1 second
-                loop 59 times:
-                    if {sec} is greater than 0:
-                        subtract 1 from {sec}
-                        make console execute command "ab all &eStorm will take over in %{min}%:%{sec}%"
-                        wait 1 second
-                    else:
-                        send "&c&lStorm Taking Over! &4&lRUN!"
-                        make console execute command "title @a title """""
-                        make console execute command "title @a subtitle ""Storm Taking Over! RUN!"""
-                        make console execute command "worldborder set 1 60"
-                        stop
-                    
+                                if {sec} is greater than 0:
+                                    subtract 1 from {sec}
+                                    make console execute command "ab all &cStorm will have taken over in %{min}%:%{sec}%"
+                                    wait 1 seconds
+                            make console execute command "execute @r ~ ~ ~ /worldborder center 69 69"
+                else:
+                    if {sec} is between 0 and 60:
+                        make console execute command "ab all &dStorm taking over in %{min}%:%{sec}%"
